@@ -306,3 +306,62 @@ delete from funcionario where salario >= 10000 and salario <= 20000; -- Da erro 
 update funcionario set salario = salario * 1.05; -- Da erro por conta do safe mode
 
 update funcionario set salario = salario * 1.05 where salario <=1000; -- Da erro por conta do safe mode
+
+select distinct cidade from funcionario;
+
+select nome, cidade, salario/1000 from funcionario;
+
+select numero, nome, cidade, estado, salario from funcionario where cidade='sao paulo' and salario > 2000;
+
+select funcionario.nome, numeroProj from funcionario, funcionarioprojeto where numero = numeroFunc;
+
+select funcionario.nome, numeroproj from funcionario, funcionarioprojeto where numero=numerofunc and horas > '15:00:00';
+
+select nome, salario, salario/12 as parcela_13_salario from funcionario order by salario desc;
+
+select * from funcionario order by salario asc, nome desc;
+
+select nome, salario from funcionario where salario between 2000.00 and 3000.00;
+
+select nome, cidade from funcionario where cidade like '%Sao Paulo%';
+
+select nome, salario from funcionario where nome not like 'Paulo %';
+
+select max(salario) as maior_salario from funcionario;
+
+select max(salario) from funcionario;
+
+select avg(salario) as media_salario from funcionario;
+
+select count(*) as total_funcionarios from funcionario where salario > 3000;
+
+select nome, salario from funcionario where salario = (select min(salario) from funcionario);
+
+select nome from funcionario where salario is null;
+
+select nome, round(salario,2) from funcionario where salario is not null;
+
+select nome, horas from funcionario F, funcionarioprojeto FP where F.numero = FP.numerofunc and horas = (select max(horas) from funcionarioprojeto);
+
+select nome from funcionario where numero in (select distinct numerofunc from funcionarioprojeto);
+
+select distinct nome from funcionario F, funcionarioProjeto FP where F.numero = FP.numeroFunc;
+
+select nome, numeroProj, horas from funcionario F, funcionarioProjeto FP where F.numero = FP.numeroFunc and FP.horas > all (select distinct horas from funcionarioProjeto where numeroProj = 2);
+
+select nome from funcionario F where exists (select * from funcionarioProjeto P where F.numero = P.numeroFunc);
+
+select nome from funcionario F where not exists (select * from funcionarioProjeto P where F.numero = P.numeroFunc);
+
+select nome from funcionario F, funcionarioProjeto FP where F.numero=Fp.numeroFunc and horas in ('20:00:00', '10:00:00');
+
+# Atividades
+# Alexandre Santos
+-- 1. Liste todos os dados de todos os funcionarios da empresa
+	select * from funcionario;
+    
+-- 2. Liste os estados de origem dos funcionarios da empresa
+	select nome, estado from funcionario;
+    
+-- 3. Liste os valores distintos de salarios pagos aos funcionarios
+	select distinct salario from funcionario;
