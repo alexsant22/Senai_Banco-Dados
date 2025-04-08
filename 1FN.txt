@@ -1,0 +1,22 @@
+1FN
+- atributos.multvalorados
+- atributos.composto
+
+passo a passo
+1- at.mult/comp
+2- criar tab. mult
+3- tira at.mult original
+4- original desmembrar coluna nova
+
+2FN
+passo a passo
+1- chave composta
+2- at. não chave; parte chave primaria 1º composta
+3- criar tab
+4- tirar at. não chave da original
+
+3FN
+passo a passo
+1- at. não chave depende de não chave
+2- criar tab. e identificar ao t. não chave e atribuir a chave 1ª
+3- chave estrangeira FK.
