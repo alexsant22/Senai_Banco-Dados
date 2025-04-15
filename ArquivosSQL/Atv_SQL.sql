@@ -1,3 +1,4 @@
+
 CREATE DATABASE IF NOT EXISTS empresa;
 USE empresa;
 
@@ -318,3 +319,118 @@ select nome from funcionario where numero not in (select numerofunc from funcion
 
 #32
 select f.nome, fp.horas from funcionario f, funcionarioprojeto fp where f.numero = fp.numerofunc and fp.horas = (select horas from funcionarioprojeto where numeroproj = 1);
+
+-- **** JOINS ****
+# Exemplos material de aula
+# Slide 8
+Select nome, horas From (funcionario f join funcionarioprojeto p on f.numero = p.numerofunc) where horas in ('9:00:00', '18:00:00');
+
+# Slide 11
+Select nome, numeroproj, horas From (funcionario f inner join funcionarioprojeto p on f.numero = p.numerofunc);
+
+# Slide 13
+select nome, numeroproj from (funcionario f left outer join funcionarioprojeto p on f.numero = p.numerofunc);
+
+# Slide 15
+select numerofunc, f.nome, numeroproj, p.nome 
+	from (funcionario f right outer join funcionarioprojeto fp on f.numero = fp.numerofunc) 
+		right outer join projeto p on fp.numeroproj = p.numero;
+
+# Slide 17
+select F.numero AS FuncionarioNumero, F.nome AS FuncionarioNome, P.numero AS ProjetoNumero, P.nome AS Projetonome 
+	FROM funcionario F
+		LEFT OUTER JOIN FuncionarioProjeto FP ON F.numero = FP.numerofunc
+		LEFT OUTER JOIN Projeto P ON FP.numeroproj = P.numero
+UNION
+	select F.numero AS FuncionarioNumero, F.nome AS FuncionarioNome, P.numero AS ProjetoNumero, P.nome AS ProjetoNome 
+		FROM funcionario F
+			LEFT OUTER JOIN FuncionarioProjeto FP ON F.numero = FP.numerofunc
+			LEFT OUTER JOIN Projeto P ON FP.numeroproj = P.numero;
+
+# Sliede 19
+select F.numero, F.nome, P.numero, P.nome
+	from (funcionario F left outer join funcionarioprojeto FP on
+		F.numero = FP.numerofunc) left outer join projeto P on
+        FP.numeroproj = P.numero where FP.numeroproj is null;
+        
+# Slide 21
+select f.numero, f.nome, p.numero, p.nome from (funcionario f left outer join
+	funcionarioprojeto fp on f.numero = fp.numerofunc) left outer join projeto p on
+		fp.numeroproj= p.numero where fp.numeroproj is NULL
+	union
+select f.numero, f.nome, p.numero, p.nome from (funcionario f right  join
+	funcionarioprojeto fp on f.numero = fp.numerofunc) right outer join projeto p on
+		fp.numeroproj= p.numero where fp.numeroproj is NULL;
+        
+# Slide 23
+select D.numero, D.nome, avg(salario) as media 
+	From departamento D, funcionario f 
+		where D.numero=f.numero_depto
+			group by f.numero_depto;
+
+# Slide 26
+select numerofunc, sec_to_time(sum(time_to_sec(horas))) as total
+	from funcionarioprojeto
+		group by numerofunc;
+        
+# Slide 27
+select * from
+	(select numerofunc, sec_to_time(sum(time_to_sec(horas))) as total
+		from funcionarioprojeto group by numerofunc) as X
+			inner join funcionario as F on X.numerofunc = F.numero and
+				X.total = (select max(total) from
+					(select numero func , sec_to_time(sum(time_to_sec(horas))) as total
+						from funcionarioprojeto group by numerofunc) B);
+                        
+# Slide 29
+select D.numero, D.nome, avg(salario) as media
+	from departamento D, funcionario F
+		where D.numero = F.numero_depto
+			group by F.numero_depto
+				having media > 2300.00;
+
+# **** Atividades ****
+# 1)
+select p.numero, p.nome, f.nome
+	from projeto p join funcionarioprojeto fp on 
+		p.numero = fp.numeroproj join funcionario f on f.numero = fp.numerofunc;
+        
+# 2)
+select p.numero, p.nome, f.nome
+	from projeto p left join funcionarioprojeto fp on 
+		p.numero = fp.numeroproj left join funcionario f on f.numero = fp.numerofunc;
+        
+# 3)
+select round(avg(salario),2) as 'Media Salarial'
+	from funcionario;
+    
+# 4)
+select d.numero, d.nome, avg(salario) as 'Media'
+	from departamento d join funcionario f on
+		f.numero_depto = d.numero
+			group by d.numero;
+
+# 5)
+select d.numero, d.nome, count(salario) as 'nro funcionario',
+	round(avg(f.salario),2) as 'Media' from departamento d
+		join funcionario f on f.numero_depto = d.numero
+			group by d.numero;
+            
+# 6)
+select d.numero, d.nome, count(salario) as 'nro funcionario',
+	round(avg(f.salario),2) as 'Media' from departamento d
+		left join funcionario f on f.numero_depto = d.numero
+			group by d.numero;
+            
+# 7)
+select d.numero, d.nome, count(salario) as 'nro_funcionario',
+	round(avg(f.salario),2) as 'Media' from departamento d
+		left join funcionario f on f.numero_depto = d.numero
+			group by d.numero
+				having nro_funcionario > 2;
+
+# 8)
+select f1.nome as 'gerente', d.nome, f2.nome as 'subordinado'
+	from funcionario f1 join departamento d
+		on f1.numero = d.numerofuncger
+			join funcionario f2 on f2.numero_depto = d.numero;
