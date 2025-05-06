@@ -306,74 +306,75 @@ select * from EquipesJogadores;
 
 desc EquipesJogadores;
 
-# **** Index****
-create table torcedor (
-id int not null,
-nome varchar(30),
-sexo char(1),
-idEquipe int,
-constraint pk_torcedor primary key(id),
-constraint fk_torcedor_equipe foreign key(idEquipe)
-references equipe (id)
-);
+# ***********************
+# ********* INDICES *****
+# ***********************
 
-create table torcedo2 (
-id int not null,
-nome varchar(30),
-sexo char(1),
-idEquipe int,
-constraint pk_torcedor2 primary key(id),
-constraint fk_torcedor_equipe2 foreign key(idEquipe)
-references equipe (id)
-);
+create table TORCEDOR(
+ id int,
+ nome varchar(30),
+ sexo char(1),
+ idEquipe int,
+ constraint pk_torcedor primary key(id),
+ constraint fk_torcedor_equipe foreign key(idEquipe)
+ references Equipe(id)
+ );
 
-EXPLAIN select * from torcedor where id = '1';
+create table TORCEDOR2(
+ id int,
+ nome varchar(30),
+ sexo char(1),
+ idEquipe int,
+ constraint pk_torcedor2 primary key(id),
+ constraint fk_torcedor_equipe2 foreign key(idEquipe)
+ references Equipe(id)
+ );
 
-delimiter $$
-create procedure popular_torcedores()
-begin
-	declare i int default 1;
-    while i <= 100000 do
-		insert into torcedor(id, nome)
-        values(i, concat('torcedor', lpad(i, 6, 0)));
-        
-        insert into torcedor2(id, nome)
-        values(i, concat('torcedor2', lpad(i, 6, 0)));
-        
-		if mod(i, 10000) = 0 then
-			commit;
-		end if;
-		
-		set i = i + 1;
-	end while;
-    
-    commit;
-        
-end $$
+EXPLAIN select * from torcedor where id = 5;
 
-delimiter $$
+DELIMITER $$
 
-use futebol_aula;
+CREATE PROCEDURE popular_torcedores()
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    WHILE i <= 100000 DO
+        INSERT INTO torcedor(id, nome)
+        VALUES(i, CONCAT('torcedor', LPAD(i, 6, '0')));
+        INSERT INTO torcedor2(id, nome)
+        VALUES(i, CONCAT('torcedor2', LPAD(i, 6, '0')));
+        IF MOD(i, 10000) = 0 THEN
+            COMMIT;
+        END IF;
+        SET i = i + 1;
+    END WHILE;
+    COMMIT;
+END $$
 
-select * from torcedor;
+DELIMITER ;
 
+SELECT * FROM torcedor;
 -- contar o tempo de execução
+-- Ativar profiling
+SET PROFILING = 1;
 
-set profiling = 1;
+-- Consulta de exemplo
+SELECT * FROM torcedor WHERE nome = 'Torcedor000123';
 
--- sua consulta aq
-select * from torcedor where nome = 'Torcedor000123';
+-- Execute a procedure SEPARADAMENTE para evitar erro de "out of sync"
+CALL popular_torcedores();
 
-call popular_torcedores();
+-- Depois, consulte os tempos
+SHOW PROFILES;
 
-# atualizar os inserts dos sexos
-update Torcedor set sexo = 'M' where mod(id, 2) = 0;
-update Torcedor set sexo = 'F' where mod(id, 2) = 1;
+-- Atualizar sexos
+UPDATE Torcedor SET sexo = 'M' WHERE MOD(id, 2) = 0;
+UPDATE Torcedor SET sexo = 'F' WHERE MOD(id, 2) = 1;
+UPDATE Torcedor2 SET sexo = 'M' WHERE MOD(id, 2) = 0;
+UPDATE Torcedor2 SET sexo = 'F' WHERE MOD(id, 2) = 1;
 
-update Torcedor2 set sexo = 'M' where mod(id, 2) = 0;
-update Torcedor2 set sexo = 'F' where mod(id, 2) = 1;
+-- Corrigir a variável 'i' -> usar 'id'
+UPDATE Torcedor SET idEquipe = MOD(id, 10) + 1;
+UPDATE Torcedor2 SET idEquipe = MOD(id, 10) + 1;
 
-update Torcedor set idEquipe = mod(i, 10) + 1;
-update Torcedor2 set idEquipe = mod(i, 10) + 1;
-
-drop procedure if exists popular_torcedores;
+-- Somente depois, se quiser, remova a procedure
+DROP PROCEDURE IF EXISTS popular_torcedores;
