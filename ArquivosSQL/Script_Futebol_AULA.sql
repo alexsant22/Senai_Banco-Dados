@@ -306,3 +306,74 @@ select * from EquipesJogadores;
 
 desc EquipesJogadores;
 
+# **** Index****
+create table torcedor (
+id int not null,
+nome varchar(30),
+sexo char(1),
+idEquipe int,
+constraint pk_torcedor primary key(id),
+constraint fk_torcedor_equipe foreign key(idEquipe)
+references equipe (id)
+);
+
+create table torcedo2 (
+id int not null,
+nome varchar(30),
+sexo char(1),
+idEquipe int,
+constraint pk_torcedor2 primary key(id),
+constraint fk_torcedor_equipe2 foreign key(idEquipe)
+references equipe (id)
+);
+
+EXPLAIN select * from torcedor where id = '1';
+
+delimiter $$
+create procedure popular_torcedores()
+begin
+	declare i int default 1;
+    while i <= 100000 do
+		insert into torcedor(id, nome)
+        values(i, concat('torcedor', lpad(i, 6, 0)));
+        
+        insert into torcedor2(id, nome)
+        values(i, concat('torcedor2', lpad(i, 6, 0)));
+        
+		if mod(i, 10000) = 0 then
+			commit;
+		end if;
+		
+		set i = i + 1;
+	end while;
+    
+    commit;
+        
+end $$
+
+delimiter $$
+
+use futebol_aula;
+
+select * from torcedor;
+
+-- contar o tempo de execução
+
+set profiling = 1;
+
+-- sua consulta aq
+select * from torcedor where nome = 'Torcedor000123';
+
+call popular_torcedores();
+
+# atualizar os inserts dos sexos
+update Torcedor set sexo = 'M' where mod(id, 2) = 0;
+update Torcedor set sexo = 'F' where mod(id, 2) = 1;
+
+update Torcedor2 set sexo = 'M' where mod(id, 2) = 0;
+update Torcedor2 set sexo = 'F' where mod(id, 2) = 1;
+
+update Torcedor set idEquipe = mod(i, 10) + 1;
+update Torcedor2 set idEquipe = mod(i, 10) + 1;
+
+drop procedure if exists popular_torcedores;
